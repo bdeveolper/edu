@@ -89,7 +89,7 @@ function figmaSiteConfiguration(config: FigmaSiteConfiguration): Plugin {
   const title = config.title ?? "Education Platform"
   const description = config.description ?? ''
   // Imported HTML keeps its own favicon; new Makes default to the Make product icon.
-  const favicon = config.icons?.icon ?? '/favicon.svg'
+  const favicon = config.icons?.icon ?? '/b-developer-logo.jpeg'
   const socialImage = config.openGraph?.image ?? ''
   const language = sanitizeHtmlValue(config.language) || 'en'
   const googleAnalyticsId = sanitizeHtmlValue(config.analytics?.googleAnalyticsId)
@@ -136,8 +136,12 @@ function figmaSiteConfiguration(config: FigmaSiteConfiguration): Plugin {
         if (config.robots?.index === false) {
           tags.push({ tag: 'meta', attrs: { name: 'robots', content: 'noindex, nofollow' }, injectTo: 'head' })
         }
-        if (favicon) {
-          tags.push({ tag: 'link', attrs: { rel: 'icon', href: favicon }, injectTo: 'head' })
+        if (favicon && !/<link\b[^>]*\brel=["']icon["']/i.test(result)) {
+          tags.push({
+            tag: 'link',
+            attrs: { rel: 'icon', type: 'image/jpeg', href: favicon },
+            injectTo: 'head',
+          })
         }
         if (title) {
           tags.push({ tag: 'meta', attrs: { property: 'og:title', content: title }, injectTo: 'head' })

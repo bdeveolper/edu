@@ -25,7 +25,6 @@ import {
   Download,
   Filter,
   FileText,
-  GraduationCap,
   GripVertical,
   Headphones,
   HelpCircle,
@@ -260,13 +259,22 @@ const parentChildren: Record<ParentChildId, ParentChildProfile> = {
 }
 
 function Brand({ compact = false }: { compact?: boolean }) {
+  const [logoFailed, setLogoFailed] = useState(false)
+
   return (
     <div className={`brand ${compact ? "compact" : ""}`}>
-      <img 
-        src="/b-developer-logo.jpeg" 
-        alt="B Developer Logo" 
-        className="h-10 w-auto object-contain" 
-      />
+      {logoFailed ? (
+        <div className="brand-fallback" role="img" aria-label="B Developer Logo">
+          B
+        </div>
+      ) : (
+        <img
+          src="/b-developer-logo.jpeg"
+          alt="B Developer Logo"
+          className="h-10 w-auto object-contain"
+          onError={() => setLogoFailed(true)}
+        />
+      )}
       {!compact && (
         <span>
           <b>B Developer</b>
@@ -1890,6 +1898,32 @@ function LandingPage({
   )
 }
 
+const demoAccounts: {
+  email: string
+  password: string
+  role: Extract<Portal, "student" | "parent" | "instructor">
+  name: string
+}[] = [
+  {
+    email: "student@demo.com",
+    password: "Student@123",
+    role: "student",
+    name: "عمر أحمد",
+  },
+  {
+    email: "parent@demo.com",
+    password: "Parent@123",
+    role: "parent",
+    name: "أحمد خالد",
+  },
+  {
+    email: "teacher@demo.com",
+    password: "Teacher@123",
+    role: "instructor",
+    name: "أ. أحمد محمود",
+  },
+]
+
 function AuthPage({
   enter,
   back,
@@ -1897,16 +1931,27 @@ function AuthPage({
   theme,
   toggleTheme,
 }: {
-  enter: (portal: Portal) => void
+  enter: (portal: Portal, name?: string) => void
   back: () => void
   signup: () => void
   theme: Theme
   toggleTheme: () => void
 }) {
-  const [role, setRole] = useState<"student" | "parent">("student")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
   const submit = (event: FormEvent) => {
     event.preventDefault()
-    enter(role)
+    const account = demoAccounts.find(
+      (demoAccount) =>
+        demoAccount.email === email.trim() &&
+        demoAccount.password === password,
+    )
+    if (!account) {
+      setError("البريد الإلكتروني أو كلمة المرور غير صحيحة.")
+      return
+    }
+    enter(account.role, account.name)
   }
   return (
     <div className="auth-page" dir="rtl">
@@ -1926,43 +1971,39 @@ function AuthPage({
         </span>
       </section>
       <section className="auth-card-wrap">
-        <form className="auth-card" onSubmit={submit}>
+        <form className="auth-card" onSubmit={submit} noValidate>
           <div className="auth-logo">
             <Brand />
           </div>
           <h2>مرحباً بعودتك</h2>
           <p>اختر نوع حسابك ثم أدخل بيانات الدخول.</p>
-          <div className="role-tabs">
-            {[
-              ["student", "طالب", BookOpen],
-              ["parent", "ولي أمر", Users],
-            ].map(([id, label, RoleIcon]) => {
-              const Icon = RoleIcon as LucideIcon
-              return (
-                <button
-                  type="button"
-                  className={role === id ? "active" : ""}
-                  onClick={() => setRole(id as typeof role)}
-                  key={String(id)}
-                >
-                  <Icon size={18} />
-                  {String(label)}
-                </button>
-              )
-            })}
-          </div>
+          {error && (
+            <p className="auth-error" role="alert">
+              {error}
+            </p>
+          )}
           <label className="auth-field">
             <span>البريد الإلكتروني أو رقم الهاتف</span>
             <i>
               <Mail size={18} />
-              <input required placeholder="name@example.com" />
+              <input
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="name@example.com"
+              />
             </i>
           </label>
           <label className="auth-field">
             <span>كلمة المرور</span>
             <i>
               <Lock size={18} />
-              <input required type="password" placeholder="••••••••" />
+              <input
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder="••••••••"
+              />
             </i>
           </label>
           <div className="auth-meta">
@@ -1980,14 +2021,25 @@ function AuthPage({
               أنشئ حساباً جديداً
             </button>
           </small>
-          <button
-            type="button"
-            className="teacher-login-link"
-            onClick={() => enter("instructor")}
-          >
-            <GraduationCap size={16} /> دخول المدرّس وإدارة المنصة
-          </button>
         </form>
+        <div className="demo-accounts">
+          <b>حسابات تجريبية للعرض</b>
+          <div>
+            {demoAccounts.map((account) => (
+              <button
+                type="button"
+                key={account.email}
+                onClick={() => {
+                  setEmail(account.email)
+                  setPassword(account.password)
+                  setError("")
+                }}
+              >
+                {account.email}
+              </button>
+            ))}
+          </div>
+        </div>
       </section>
     </div>
   )
@@ -2000,16 +2052,69 @@ function SignupPage({
   theme,
   toggleTheme,
 }: {
-  enter: (portal: Portal) => void
+  enter: (portal: Portal, name?: string) => void
   login: () => void
   back: () => void
   theme: Theme
   toggleTheme: () => void
 }) {
   const [role, setRole] = useState<"student" | "parent">("student")
+  const [form, setForm] = useState({
+    studentName: "",
+    mobile: "",
+    grade: "الصف الثالث الثانوي",
+    parentMobile: "",
+    relation: "",
+    parentName: "",
+    studentFullName: "",
+    studentMobile: "",
+    password: "",
+    confirmPassword: "",
+    consent: false,
+  })
+  const [error, setError] = useState("")
+  const updateForm = (field: keyof typeof form, value: string | boolean) => {
+    setForm((current) => ({ ...current, [field]: value }))
+  }
   const submit = (event: FormEvent) => {
     event.preventDefault()
-    enter(role)
+    const name = role === "student" ? form.studentName : form.parentName
+    const phones = [form.mobile]
+    if (role === "student") {
+      phones.push(form.parentMobile)
+    } else {
+      phones.push(form.studentMobile)
+    }
+
+    if (
+      !name.trim() ||
+      (role === "parent" && !form.studentFullName.trim())
+    ) {
+      setError("يرجى إدخال الاسم بالكامل.")
+      return
+    }
+    if (phones.some((phone) => !/^01[0125]\d{8}$/.test(phone))) {
+      setError("يرجى إدخال رقم هاتف مصري صحيح.")
+      return
+    }
+    if (form.password.length < 8) {
+      setError("يجب ألا تقل كلمة المرور عن 8 أحرف.")
+      return
+    }
+    if (form.password !== form.confirmPassword) {
+      setError("كلمتا المرور غير متطابقتين.")
+      return
+    }
+    if (role === "parent" && !form.relation) {
+      setError("يرجى تحديد صلتك بالطالب.")
+      return
+    }
+    if (!form.consent) {
+      setError("يرجى الموافقة على شروط الاستخدام وسياسة الخصوصية.")
+      return
+    }
+    setError("")
+    enter(role, name.trim())
   }
   return (
     <div className="signup-page" dir="rtl">
@@ -2040,17 +2145,25 @@ function SignupPage({
         </ul>
       </section>
       <section className="signup-form-wrap">
-        <form className="signup-form" onSubmit={submit}>
+        <form className="signup-form" onSubmit={submit} noValidate>
           <div className="auth-logo">
             <Brand />
           </div>
           <h2>إنشاء حساب جديد</h2>
           <p>أدخل بياناتك الأساسية لإنشاء الحساب.</p>
+          {error && (
+            <p className="auth-error" role="alert">
+              {error}
+            </p>
+          )}
           <div className="role-tabs">
             <button
               type="button"
               className={role === "student" ? "active" : ""}
-              onClick={() => setRole("student")}
+              onClick={() => {
+                setRole("student")
+                setError("")
+              }}
             >
               <BookOpen size={18} />
               حساب طالب
@@ -2058,53 +2171,150 @@ function SignupPage({
             <button
               type="button"
               className={role === "parent" ? "active" : ""}
-              onClick={() => setRole("parent")}
+              onClick={() => {
+                setRole("parent")
+                setError("")
+              }}
             >
               <Users size={18} />
               حساب ولي أمر
             </button>
           </div>
           <div className="form-grid">
-            <label className="field full">
-              <span>الاسم بالكامل</span>
-              <input required placeholder="اكتب الاسم الرباعي" />
-            </label>
-            <label className="field">
-              <span>رقم الهاتف</span>
-              <input required type="tel" placeholder="01xxxxxxxxx" />
-            </label>
-            <label className="field">
-              <span>الصف الدراسي</span>
-              <Select>
-                <option>الصف الثالث الثانوي</option>
-                <option>الصف الثاني الثانوي</option>
-                <option>الصف الأول الثانوي</option>
-              </Select>
-            </label>
-            <label className="field full">
-              <span>رقم هاتف ولي الأمر</span>
-              <input
-                required
-                type="tel"
-                placeholder="رقم لاستقبال التنبيهات والمتابعة"
-              />
-            </label>
+            {role === "student" ? (
+              <>
+                <label className="field full">
+                  <span>الاسم بالكامل</span>
+                  <input
+                    value={form.studentName}
+                    onChange={(event) =>
+                      updateForm("studentName", event.target.value)
+                    }
+                    placeholder="اكتب الاسم الرباعي"
+                  />
+                </label>
+                <label className="field">
+                  <span>رقم الهاتف</span>
+                  <input
+                    type="tel"
+                    value={form.mobile}
+                    onChange={(event) =>
+                      updateForm("mobile", event.target.value)
+                    }
+                    placeholder="01xxxxxxxxx"
+                  />
+                </label>
+                <label className="field">
+                  <span>الصف الدراسي</span>
+                  <Select
+                    value={form.grade}
+                    onChange={(value) => updateForm("grade", value)}
+                  >
+                    <option>الصف الثالث الثانوي</option>
+                    <option>الصف الثاني الثانوي</option>
+                    <option>الصف الأول الثانوي</option>
+                  </Select>
+                </label>
+                <label className="field full">
+                  <span>رقم هاتف ولي الأمر</span>
+                  <input
+                    type="tel"
+                    value={form.parentMobile}
+                    onChange={(event) =>
+                      updateForm("parentMobile", event.target.value)
+                    }
+                    placeholder="رقم لاستقبال التنبيهات والمتابعة"
+                  />
+                </label>
+              </>
+            ) : (
+              <>
+                <label className="field full">
+                  <span>الاسم بالكامل</span>
+                  <input
+                    value={form.parentName}
+                    onChange={(event) =>
+                      updateForm("parentName", event.target.value)
+                    }
+                    placeholder="اكتب الاسم الرباعي"
+                  />
+                </label>
+                <label className="field">
+                  <span>رقم الهاتف</span>
+                  <input
+                    type="tel"
+                    value={form.mobile}
+                    onChange={(event) =>
+                      updateForm("mobile", event.target.value)
+                    }
+                    placeholder="01xxxxxxxxx"
+                  />
+                </label>
+                <label className="field">
+                  <span>صلة الطالب</span>
+                  <Select
+                    value={form.relation}
+                    onChange={(value) => updateForm("relation", value)}
+                  >
+                    <option value="" disabled>
+                      اختر صلتك بالطالب
+                    </option>
+                    <option>أب</option>
+                    <option>أم</option>
+                    <option>ولي أمر آخر</option>
+                  </Select>
+                </label>
+                <label className="field full">
+                  <span>اسم الطالب بالكامل</span>
+                  <input
+                    value={form.studentFullName}
+                    onChange={(event) =>
+                      updateForm("studentFullName", event.target.value)
+                    }
+                    placeholder="اكتب الاسم الرباعي"
+                  />
+                </label>
+                <label className="field full">
+                  <span>رقم هاتف الطالب</span>
+                  <input
+                    type="tel"
+                    value={form.studentMobile}
+                    onChange={(event) =>
+                      updateForm("studentMobile", event.target.value)
+                    }
+                    placeholder="01xxxxxxxxx"
+                  />
+                </label>
+              </>
+            )}
             <label className="field">
               <span>كلمة المرور</span>
-              <input required type="password" placeholder="8 أحرف على الأقل" />
+              <input
+                type="password"
+                value={form.password}
+                onChange={(event) => updateForm("password", event.target.value)}
+                placeholder="8 أحرف على الأقل"
+              />
             </label>
             <label className="field">
               <span>تأكيد كلمة المرور</span>
               <input
-                required
                 type="password"
+                value={form.confirmPassword}
+                onChange={(event) =>
+                  updateForm("confirmPassword", event.target.value)
+                }
                 placeholder="أعد كتابة كلمة المرور"
               />
             </label>
           </div>
           <label className="signup-consent">
-            <input required type="checkbox" /> أوافق على شروط الاستخدام وسياسة
-            الخصوصية.
+            <input
+              type="checkbox"
+              checked={form.consent}
+              onChange={(event) => updateForm("consent", event.target.checked)}
+            />{" "}
+            أوافق على شروط الاستخدام وسياسة الخصوصية.
           </label>
           <Button type="submit" icon={UserPlus}>
             إنشاء الحساب
@@ -4261,6 +4471,7 @@ function App() {
       : "light",
   )
   const [portal, setPortal] = useState<Portal>("public")
+  const [sessionName, setSessionName] = useState("")
   const [view, setView] = useState<View>("dashboard")
   const [modal, setModal] = useState<ModalType>(null)
   const [paymentDetails, setPaymentDetails] =
@@ -4329,9 +4540,10 @@ function App() {
     setModal("excuse")
   }
 
-  const enterPortal = (nextPortal: Portal) => {
+  const enterPortal = (nextPortal: Portal, name?: string) => {
     setProfile(false)
     setNotifications(false)
+    setSessionName(name ?? "")
     setPortal(nextPortal)
     setView(
       nextPortal === "student"
@@ -4386,11 +4598,12 @@ function App() {
     )
 
   const userName =
-    portal === "student"
+    sessionName ||
+    (portal === "student"
       ? "عمر أحمد"
       : portal === "parent"
         ? "أحمد خالد"
-        : "Education Platform"
+        : "Education Platform")
   const userRole =
     portal === "student"
       ? "حساب الطالب"
