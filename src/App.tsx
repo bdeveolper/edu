@@ -270,7 +270,7 @@ function Brand({ compact = false }: { compact?: boolean }) {
       {!compact && (
         <span>
           <b>B Developer</b>
-          <small>Education </small>
+          <small>Education Platform</small>
         </span>
       )}
     </div>
