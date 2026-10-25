@@ -1,0 +1,10 @@
+{
+  "description": "A comprehensive hybrid LMS and education management platform offering tailored portals for instructors, students, and parents with advanced tools for learning, assessment, and administration in Arabic RTL layout.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
