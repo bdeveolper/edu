@@ -264,13 +264,13 @@ function Brand({ compact = false }: { compact?: boolean }) {
     <div className={`brand ${compact ? "compact" : ""}`}>
       <img 
         src="/b-developer-logo.jpeg" 
-        alt="شعار B Developer" 
+        alt="B Developer Logo" 
         className="h-10 w-auto object-contain" 
       />
       {!compact && (
         <span>
           <b>B Developer</b>
-          <small>Education Platform</small>
+          <small>Education </small>
         </span>
       )}
     </div>
@@ -935,7 +935,7 @@ function Groups({ open }: { open: (modal: ModalType) => void }) {
             <div>
               <span>
                 <b>{name}</b>
-                <small>سنتر B Developer · القاهرة</small>
+                <small>Education Platform · القاهرة</small>
               </span>
               <Badge tone={tone as "orange"}>{status}</Badge>
             </div>
@@ -1676,7 +1676,7 @@ function LandingPage({
                   <i />
                   <i />
                 </span>
-                <b>B Developer</b>
+                <b>Education Platform</b>
               </div>
               <div className="mock-layout">
                 <aside>
@@ -1884,7 +1884,7 @@ function LandingPage({
       </main>
       <footer className="public-footer">
         <Brand />
-        <p>© 2025 B Developer. جميع الحقوق محفوظة.</p>
+        <p>© 2025 Education Platform. جميع الحقوق محفوظة.</p>
       </footer>
     </div>
   )
@@ -1917,7 +1917,7 @@ function AuthPage({
       <section className="auth-brand-panel">
         <Brand />
         <div>
-          <Badge tone="blue">B Developer</Badge>
+          <Badge tone="blue">Education Platform</Badge>
           <h1>كل رحلة نجاح تبدأ بخطوة.</h1>
           <p>سجّل دخولك واستكمل رحلتك التعليمية من حيث توقفت.</p>
         </div>
@@ -2020,7 +2020,7 @@ function SignupPage({
       <section className="signup-side">
         <Brand />
         <div>
-          <Badge tone="blue">انضم إلى B Developer</Badge>
+          <Badge tone="blue">انضم إلى Education Platform</Badge>
           <h1>ابدأ رحلتك التعليمية مع أ. أحمد محمود.</h1>
           <p>دروس منظمة، اختبارات مستمرة، ومتابعة دقيقة للتقدم والحضور.</p>
         </div>
@@ -3767,7 +3767,7 @@ function ModalFields({
         <label className="field">
           <span>السنتر</span>
           <Select>
-            <option>سنتر B Developer - القاهرة</option>
+            <option>Education Platform - القاهرة</option>
             <option>فرع مدينة نصر</option>
           </Select>
         </label>
@@ -4233,7 +4233,7 @@ function ModalFields({
     <div className="form-grid">
       <label className="field full">
         <span>الاسم</span>
-        <input defaultValue="B Developer" />
+        <input defaultValue="Education Platform" />
       </label>
       <label className="field">
         <span>البريد الإلكتروني</span>
@@ -4390,7 +4390,7 @@ function App() {
       ? "عمر أحمد"
       : portal === "parent"
         ? "أحمد خالد"
-        : "B Developer"
+        : "Education Platform"
   const userRole =
     portal === "student"
       ? "حساب الطالب"
