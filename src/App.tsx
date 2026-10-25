@@ -262,7 +262,11 @@ const parentChildren: Record<ParentChildId, ParentChildProfile> = {
 function Brand({ compact = false }: { compact?: boolean }) {
   return (
     <div className={`brand ${compact ? "compact" : ""}`}>
-      <img src="/b-developer-logo.jpeg" alt="شعار B Developer" />
+      <img 
+        src="/b-developer-logo.jpeg" 
+        alt="شعار B Developer" 
+        className="h-10 w-auto object-contain" 
+      />
       {!compact && (
         <span>
           <b>B Developer</b>
