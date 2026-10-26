@@ -2022,24 +2022,6 @@ function AuthPage({
             </button>
           </small>
         </form>
-        <div className="demo-accounts">
-          <b>حسابات تجريبية للعرض</b>
-          <div>
-            {demoAccounts.map((account) => (
-              <button
-                type="button"
-                key={account.email}
-                onClick={() => {
-                  setEmail(account.email)
-                  setPassword(account.password)
-                  setError("")
-                }}
-              >
-                {account.email}
-              </button>
-            ))}
-          </div>
-        </div>
       </section>
     </div>
   )
@@ -3854,6 +3836,7 @@ function Modal({
         role="dialog"
         aria-modal="true"
         aria-label={details[0]}
+        dir={type === "course-details" ? "rtl" : undefined}
       >
         <header>
           <span>
