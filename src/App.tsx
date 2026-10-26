@@ -63,7 +63,7 @@ import {
 type View = "dashboard" | "curriculum" | "groups" | "attendance" | "questions" | "reports" | "student-home" | "student-courses" | "student-exam" | "student-qr" | "parent-home" | "parent-attendance" | "parent-payments" | "support"
 type Portal = "public" | "auth" | "signup" | "instructor" | "student" | "parent"
 type Theme = "light" | "dark"
-type ModalType = "course" | "lesson" | "group" | "add-student" | "support-ticket" | "manual-attendance" | "question" | "exam" | "withdraw" | "export" | "profile" | "course-details" | "recharge" | "filter" | "payment-details" | "excuse" | null
+type ModalType = "course" | "lesson" | "group" | "add-student" | "support-ticket" | "manual-attendance" | "question" | "exam" | "withdraw" | "export" | "profile" | "course-details" | "teacher-message" | "recharge" | "filter" | "payment-details" | "excuse" | null
 
 type NavItem = { id: View; label: string; description: string; icon: LucideIcon }
 type ParentChildId = "omar" | "salma"
@@ -1662,7 +1662,7 @@ function LandingPage({
               <Button
                 variant="secondary"
                 icon={Play}
-                onClick={() => open("course-details")}
+                onClick={() => open("teacher-message")}
               >
                 شاهد كلمة المدرّس
               </Button>
@@ -3763,12 +3763,16 @@ function Modal({
   excuseDetails,
   close,
   success,
+  notify,
+  openSignup,
 }: {
   type: ModalType
   paymentDetails?: ParentPaymentDetails | null
   excuseDetails?: ExcuseDetails | null
   close: () => void
   success: (message: string) => void
+  notify?: (message: string) => void
+  openSignup?: () => void
 }) {
   if (!type) return null
   const details = {
@@ -3805,6 +3809,10 @@ function Modal({
       "تفاصيل الدورة",
       "راجع محتوى الدورة والمدرّس قبل المتابعة.",
     ],
+    "teacher-message": [
+      "كلمة المدرّس",
+      "رسالة من أ. أحمد محمود قبل بداية رحلتك التعليمية.",
+    ],
     recharge: ["شحن المحفظة", "اختر وسيلة الدفع وأدخل قيمة الشحن."],
     filter: ["تصفية النتائج", "حدّد المعايير التي تريد عرضها."],
     "payment-details": ["تفاصيل العملية", "معلومات الفاتورة وحالة الدفع."],
@@ -3836,7 +3844,11 @@ function Modal({
         role="dialog"
         aria-modal="true"
         aria-label={details[0]}
-        dir={type === "course-details" ? "rtl" : undefined}
+        dir={
+          type === "course-details" || type === "teacher-message"
+            ? "rtl"
+            : undefined
+        }
       >
         <header>
           <span>
@@ -3850,29 +3862,47 @@ function Modal({
             type={type}
             paymentDetails={paymentDetails}
             excuseDetails={excuseDetails}
+            notify={notify}
           />
-          <footer>
-            <Button variant="secondary" onClick={close}>
-              إلغاء
-            </Button>
-            <Button type="submit" icon={type === "export" ? Download : Check}>
-              {type === "export"
-                ? "تصدير الملف"
-                : type === "withdraw"
-                  ? "إرسال الطلب"
-                  : type === "recharge"
-                    ? "تأكيد الشحن"
-                    : type === "filter"
-                      ? "تطبيق التصفية"
-                      : type === "course-details"
-                        ? "الاشتراك الآن"
-                        : type === "payment-details"
-                          ? "تحميل الفاتورة"
-                          : type === "excuse"
-                            ? "إرسال العذر"
-                            : "حفظ"}
-            </Button>
-          </footer>
+          {type === "teacher-message" ? (
+            <footer>
+              <Button variant="secondary" onClick={close}>
+                إغلاق
+              </Button>
+              <Button
+                type="button"
+                onClick={() => {
+                  close()
+                  openSignup?.()
+                }}
+              >
+                ابدأ رحلتك التعليمية
+              </Button>
+            </footer>
+          ) : (
+            <footer>
+              <Button variant="secondary" onClick={close}>
+                إلغاء
+              </Button>
+              <Button type="submit" icon={type === "export" ? Download : Check}>
+                {type === "export"
+                  ? "تصدير الملف"
+                  : type === "withdraw"
+                    ? "إرسال الطلب"
+                    : type === "recharge"
+                      ? "تأكيد الشحن"
+                      : type === "filter"
+                        ? "تطبيق التصفية"
+                        : type === "course-details"
+                          ? "الاشتراك الآن"
+                          : type === "payment-details"
+                            ? "تحميل الفاتورة"
+                            : type === "excuse"
+                              ? "إرسال العذر"
+                              : "حفظ"}
+              </Button>
+            </footer>
+          )}
         </form>
       </section>
     </div>
@@ -3883,10 +3913,12 @@ function ModalFields({
   type,
   paymentDetails,
   excuseDetails,
+  notify,
 }: {
   type: Exclude<ModalType, null>
   paymentDetails?: ParentPaymentDetails | null
   excuseDetails?: ExcuseDetails | null
+  notify?: (message: string) => void
 }) {
   if (type === "lesson")
     return (
@@ -4292,6 +4324,67 @@ function ModalFields({
         </div>
       </div>
     )
+
+  if (type === "teacher-message")
+    return (
+      <div className="course-modal teacher-message-modal">
+        <div className="teacher-message-top">
+          <div className="teacher-message-avatar">
+            <span>أح</span>
+          </div>
+          <div className="teacher-message-copy">
+            <b>أ. أحمد محمود</b>
+            <small>مدرّس الفيزياء</small>
+            <span>8+ سنوات خبرة</span>
+          </div>
+        </div>
+
+        <div className="teacher-message-video" role="button" tabIndex={0}>
+          <button
+            type="button"
+            aria-label="الفيديو التعريفي"
+            onClick={() => notify?.("الفيديو التعريفي متاح قريباً")}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault()
+                notify?.("الفيديو التعريفي متاح قريباً")
+              }
+            }}
+          >
+            <Play size={26} fill="currentColor" />
+          </button>
+          <small>فيديو تعريفي - 3:45</small>
+        </div>
+
+        <div className="teacher-message-body">
+          <p>
+            أهلاً بك، أنا أحمد محمود، مدرّس الفيزياء، وسعيد أن أكون جزءاً من
+            رحلتك التعليمية. المنصة التي بين يديك تم تصميمها لتجعل التعلم أكثر
+            تنظيماً، أسهل، وأكثر فاعلية في كل خطوة.
+          </p>
+          <p>
+            هنا ستجد شرحاً واضحاً، تمارين هادفة، ومتابعة مستمرة تساعدك على
+            تحقيق أفضل النتائج بثقة. هدفنا أن تكتسب المهارة، وتستمتع بالتعلم،
+            وتصل إلى أهدافك بتفوق ونجاح مستمر.
+          </p>
+        </div>
+
+        <div className="teacher-message-stats">
+          <span>
+            <strong>384+</strong>
+            <small>طالب</small>
+          </span>
+          <span>
+            <strong>1.8K</strong>
+            <small>درس</small>
+          </span>
+          <span>
+            <strong>92%</strong>
+            <small>نسبة النجاح</small>
+          </span>
+        </div>
+      </div>
+    )
   if (type === "recharge")
     return (
       <div className="form-grid">
@@ -4502,12 +4595,15 @@ function App() {
   const current =
     roleNavigation.find((item) => item.id === view) || roleNavigation[0]
 
+  const showToast = (message: string) => {
+    setToast(message)
+    window.setTimeout(() => setToast(""), 3200)
+  }
   const showSuccess = (message: string) => {
     setModal(null)
     setPaymentDetails(null)
     setExcuseDetails(null)
-    setToast(message)
-    window.setTimeout(() => setToast(""), 3200)
+    showToast(message)
   }
   const closeModal = () => {
     setModal(null)
@@ -4553,6 +4649,8 @@ function App() {
           paymentDetails={paymentDetails}
           excuseDetails={excuseDetails}
           success={showSuccess}
+          notify={showToast}
+          openSignup={() => setPortal("signup")}
         />
         {toast && <Toast message={toast} close={() => setToast("")} />}
       </>
@@ -4733,6 +4831,8 @@ function App() {
         paymentDetails={paymentDetails}
         excuseDetails={excuseDetails}
         success={showSuccess}
+        notify={showToast}
+        openSignup={() => setPortal("signup")}
       />
       {toast && <Toast message={toast} close={() => setToast("")} />}
     </div>
