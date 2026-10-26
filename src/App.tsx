@@ -1976,7 +1976,6 @@ function AuthPage({
             <Brand />
           </div>
           <h2>مرحباً بعودتك</h2>
-          <p>اختر نوع حسابك ثم أدخل بيانات الدخول.</p>
           {error && (
             <p className="auth-error" role="alert">
               {error}
